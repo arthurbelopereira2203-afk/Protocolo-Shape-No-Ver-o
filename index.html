@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Protocolo Shape no Verão</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=Poiret+One&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<style>
+:root{--bg:#181C20;--sf:#20262B;--tx:#F3E6D8;--mu:#A99C8F;--bd:#343C42;--sun:#D9A06B;--sea:#C98B5E;--on-sea:#181C20;color-scheme:dark;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#181C20;--sf:#20262B;--tx:#F3E6D8;--mu:#A99C8F;--bd:#343C42;--sea:#C98B5E;--on-sea:#181C20;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#181C20;--sf:#20262B;--tx:#F3E6D8;--mu:#A99C8F;--bd:#343C42;--sea:#C98B5E;--on-sea:#181C20;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:400 17px/1.55 Jost,system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
+h1,h2,h3{font-family:Jost,Jost,system-ui,sans-serif;line-height:1.05;margin:0 0 .5em}
+main{max-width:720px;margin:0 auto;padding:28px 20px 60px;position:relative}
+.sun{position:absolute;top:-90px;right:-110px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,var(--sun) 0 38%,transparent 39%),repeating-conic-gradient(from 0deg,var(--sun) 0 6deg,transparent 6deg 18deg);-webkit-mask:radial-gradient(circle,#000 0 70%,transparent 71%);mask:radial-gradient(circle,#000 0 70%,transparent 71%);opacity:.9;pointer-events:none}
+.hero{position:relative;padding-top:70px}
+.hero h1{font-size:clamp(44px,12vw,76px);font-weight:800;letter-spacing:-.02em}
+.lead{color:var(--mu);max-width:46ch}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:18px;padding:22px;margin-top:22px}
+label.f{display:block;font-weight:600;margin-bottom:6px}
+input[type=email],input[type=text]{width:100%;font:inherit;padding:14px;border-radius:12px;border:2px solid var(--bd);background:var(--bg);color:var(--tx)}
+input:focus-visible,button:focus-visible,summary:focus-visible,.opt:focus-within{outline:3px solid var(--sea);outline-offset:2px}
+.btn{font:600 17px Jost,sans-serif;background:var(--sun);color:#0B2E4A;border:0;border-radius:999px;padding:14px 26px;cursor:pointer;margin-top:16px}
+.btn.alt{background:transparent;color:var(--tx);border:2px solid var(--bd)}
+fieldset{border:0;padding:0;margin:0 0 26px}
+legend{font:800 22px Jost,sans-serif;padding:0;margin-bottom:10px}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{border:2px solid var(--bd);border-radius:999px;padding:8px 14px;cursor:pointer;background:var(--bg)}
+.opt:has(input:checked){background:var(--sea);color:var(--on-sea);border-color:var(--sea)}
+.opt input{position:absolute;opacity:0;pointer-events:none}
+.small{font-size:14px;color:var(--mu)}
+.bar{height:12px;border-radius:99px;background:var(--bd);overflow:hidden;margin:10px 0 4px}
+.bar i{display:block;height:100%;background:var(--sun);transition:width .4s}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:14px}
+@media(min-width:560px){.grid{grid-template-columns:repeat(6,1fr)}}
+.day{aspect-ratio:1;border-radius:16px;border:2px solid var(--bd);background:var(--sf);color:var(--tx);font:800 22px Jost,sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.day small{font:600 11px Jost,sans-serif;color:var(--mu);margin-top:4px}
+.day.rest{border-style:dashed}
+.day.done{background:var(--sun);border-color:var(--sun);color:#0B2E4A}
+.day.done small{color:#0B2E4A}
+.wk{margin:24px 0 0;font-size:20px}
+dialog{border:0;border-radius:20px;padding:24px;max-width:540px;width:calc(100% - 28px);background:var(--sf);color:var(--tx)}
+dialog::backdrop{background:rgba(5,25,38,.6)}
+.blk{border-top:1px solid var(--bd);padding:12px 0}
+.blk b{display:block;font-family:Jost,sans-serif;font-size:18px}
+.warn{background:var(--sun);color:#0B2E4A;border-radius:12px;padding:10px 14px;font-size:15px;margin-top:12px}
+.hidden{display:none}
+.nav{display:flex;flex-wrap:wrap;gap:6px;position:relative;z-index:1}
+.nav button{font:600 14px Jost,sans-serif;padding:8px 13px;border-radius:99px;border:2px solid var(--bd);background:var(--sf);color:var(--tx);cursor:pointer}
+.nav button[aria-current]{background:var(--sea);color:var(--on-sea);border-color:var(--sea)}
+.hero.sm{padding-top:30px}.hero.sm h1{font-size:clamp(34px,9vw,48px)}
+.day.lock{opacity:.5;cursor:not-allowed;border-style:dotted}
+details.blk summary{cursor:pointer}details ol{padding-left:20px;margin:8px 0}
+a.btn{display:inline-block;text-decoration:none;margin-right:8px}
+.price{font:800 22px Jost,sans-serif}
+.scard{background:linear-gradient(135deg,#2E7D6B,#16342E);color:#fff;border-radius:20px;padding:26px;margin-top:22px}
+.scard h2{font-size:56px;color:#E9D3A0;margin:0}.scard p{margin:4px 0 0}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes inr{from{opacity:0;transform:translateX(44px)}to{opacity:1;transform:none}}
+@keyframes inl{from{opacity:0;transform:translateX(-44px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
+@keyframes grow{from{width:0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes drift{to{background-position-x:600px}}
+@keyframes dlg{from{opacity:0;transform:translateY(26px) scale(.96)}to{opacity:1;transform:none}}
+main{z-index:1}
+body::after{content:"";position:fixed;left:0;right:0;bottom:0;height:90px;z-index:0;pointer-events:none;background:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='90' viewBox='0 0 600 90'><path d='M0 45 Q75 5 150 45 T300 45 T450 45 T600 45 V90 H0Z' fill='%232E7D6B' fill-opacity='.16'/></svg>") repeat-x;background-size:600px 90px;animation:drift 20s linear infinite}
+.sun{animation:spin 90s linear infinite}
+#app>*{animation:rise .55s cubic-bezier(.2,.7,.2,1) both}
+#app>*:nth-child(2){animation-delay:.07s}#app>*:nth-child(3){animation-delay:.14s}#app>*:nth-child(4){animation-delay:.21s}#app>*:nth-child(n+5){animation-delay:.28s}
+#app>.in-r{animation:inr .45s cubic-bezier(.2,.7,.2,1) both}#app>.in-l{animation:inl .45s cubic-bezier(.2,.7,.2,1) both}
+#app>.nav,#app>.qh{animation:none}
+.card{border-radius:22px;box-shadow:0 14px 30px -24px rgba(22,52,46,.45)}
+.btn,.nav button,.day,.qo,.back{transition:transform .18s,box-shadow .2s,background .25s,color .25s,border-color .25s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 20px -10px rgba(22,52,46,.5)}
+.btn:active,.nav button:active,.qo:active,.back:active{transform:scale(.96)}
+.nav button:hover{transform:translateY(-2px);border-color:var(--sea)}
+.day:not(:disabled):hover{transform:scale(1.07) rotate(-2deg);border-color:var(--sea)}
+.grid .day{animation:pop .45s cubic-bezier(.3,1.4,.5,1) both}
+.grid .day:nth-child(2){animation-delay:.05s}.grid .day:nth-child(3){animation-delay:.1s}.grid .day:nth-child(4){animation-delay:.15s}.grid .day:nth-child(5){animation-delay:.2s}.grid .day:nth-child(6){animation-delay:.25s}.grid .day:nth-child(7){animation-delay:.3s}
+.day.done{background:linear-gradient(145deg,#EBD8A8,var(--sun))}
+.bar i{animation:grow 1s cubic-bezier(.2,.7,.2,1)}
+dialog[open]{animation:dlg .35s cubic-bezier(.2,.8,.2,1)}
+details.card[open]{border-color:var(--sea)}
+.qh{display:flex;align-items:center;gap:12px;position:relative;z-index:1}
+.back{width:42px;height:42px;border-radius:50%;border:2px solid var(--bd);background:var(--sf);color:var(--tx);font-size:20px;cursor:pointer}
+.back:hover{border-color:var(--sea);transform:translateX(-3px)}
+.qbar{flex:1;height:8px;border-radius:9px;background:var(--bd);overflow:hidden}.qbar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--sea),var(--sun));transition:width .5s cubic-bezier(.2,.7,.2,1)}
+.qs{padding-top:34px;position:relative}.qs h1{font-size:clamp(30px,8vw,44px)}
+.qopts{display:grid;gap:10px;margin:20px 0 6px}
+.qo{font:600 18px Jost,sans-serif;text-align:left;padding:16px 18px;border-radius:16px;border:2px solid var(--bd);background:var(--sf);color:var(--tx);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.qo::after{content:"";flex:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--bd);transition:all .25s}
+.qo:hover{transform:translateX(5px);border-color:var(--sea)}
+.qo.on{border-color:var(--sea);background:var(--sea);color:var(--on-sea)}
+.qo.on::after{background:var(--sun);border-color:var(--sun);transform:scale(1.15)}
+.load{text-align:center;padding-top:120px}.sunspin{width:96px;height:96px;margin:0 auto 24px;border-radius:50%;background:radial-gradient(circle,var(--sun) 0 38%,transparent 39%),repeating-conic-gradient(var(--sun) 0 8deg,transparent 8deg 22deg);-webkit-mask:radial-gradient(circle,#000 0 70%,transparent 71%);mask:radial-gradient(circle,#000 0 70%,transparent 71%);animation:spin 2.4s linear infinite}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+@keyframes wig{25%{transform:rotate(-12deg) scale(1.15)}75%{transform:rotate(10deg) scale(1.15)}}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,20px)}12%,85%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,10px)}}
+.em{font-size:44px;line-height:1;margin-bottom:8px;display:inline-block}.card:hover .em{animation:wig .6s}
+.cf{position:fixed;top:-24px;width:10px;height:16px;border-radius:2px;z-index:60;pointer-events:none;animation:fall 3s linear forwards}
+.cel{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:rgba(13,38,34,.6);animation:rise .3s both}
+.celc{background:var(--sf);color:var(--tx);border-radius:26px;padding:30px;text-align:center;max-width:360px;margin:20px;animation:dlg .55s cubic-bezier(.3,1.4,.5,1)}
+.celc .big{font-size:68px;line-height:1;margin-bottom:10px}
+.toast{position:fixed;left:50%;bottom:calc(28px + env(safe-area-inset-bottom,0px));z-index:55;background:var(--sea);color:var(--on-sea);font-weight:600;padding:12px 20px;border-radius:99px;animation:toast 2.4s both}
+@keyframes medal{0%{transform:scale(0) rotate(-180deg)}70%{transform:scale(1.25) rotate(10deg)}100%{transform:scale(1) rotate(0)}}
+.medalpop{display:inline-block;animation:medal .9s .2s cubic-bezier(.3,1.2,.5,1) both}
+.quote{font:600 19px/1.4 Jost,Jost,sans-serif;color:var(--sea);margin:10px 0}
+.shelf{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;text-align:center;margin-top:12px}
+.mdl{font-size:36px;line-height:1.2;filter:grayscale(1);opacity:.3;transition:filter .4s,opacity .4s}.mdl.on{filter:none;opacity:1;animation:pop .6s cubic-bezier(.3,1.4,.5,1)}
+.smed{font-size:34px;letter-spacing:6px;margin-top:10px!important}
+main{padding-bottom:120px}
+.nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom,0px));width:min(calc(100% - 20px),560px);z-index:40;flex-wrap:nowrap;gap:2px;padding:6px;background:var(--sf);border:1px solid var(--bd);border-radius:24px;box-shadow:0 14px 30px -12px rgba(22,52,46,.5)}
+.nav button{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;font:600 10.5px Jost,sans-serif;padding:7px 2px;border:0;background:transparent;border-radius:18px}
+.nav button .ti{font-size:20px;line-height:1}
+.nav button:hover{transform:translateY(-2px);border:0}
+.nav button[aria-current]{background:var(--sea);color:var(--on-sea)}
+.toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+.nav button .ti{display:block;line-height:0}.nav .ti svg{width:23px;height:23px;display:block}
+.btn{background:linear-gradient(135deg,#EDC197,#C98B5E);color:#181C20}
+.day.done,.day.done small{color:#181C20}
+.day.done{background:linear-gradient(145deg,#EDC197,#C98B5E);border-color:#C98B5E}
+.warn{color:#181C20}
+.scard{background:linear-gradient(135deg,#2A3036,#181C20);border:1px solid #5A4331}.scard h2{color:#EDC197}
+.sun{opacity:.18}
+body::after{background:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='90' viewBox='0 0 600 90'><path d='M0 45 Q75 5 150 45 T300 45 T450 45 T600 45 V90 H0Z' fill='%23C98B5E' fill-opacity='.1'/></svg>") repeat-x;background-size:600px 90px}
+.bar i,.qbar i{background:linear-gradient(90deg,#B9784A,#EDC197)}
+.card{border-color:#3A434A}
+.logo{display:block;width:150px;height:auto;margin:0 0 14px;filter:drop-shadow(0 8px 24px rgba(201,139,94,.25))}
+.logo.s{width:78px;margin-bottom:8px}
+.hero:has(.logo){padding-top:34px}
+.load .logo{margin:0 auto 24px}
+.pulse{animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.08);filter:drop-shadow(0 8px 30px rgba(237,193,151,.55))}}
+@media(prefers-reduced-motion:reduce){*,*::after{animation:none!important}.cf{display:none}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+body{font-family:Jost,"Century Gothic",system-ui,sans-serif;font-weight:400;letter-spacing:.01em}
+h1{font-family:"Poiret One","Century Gothic",Jost,sans-serif;font-weight:400;letter-spacing:.05em;text-transform:uppercase;line-height:1.12}
+.hero h1{font-size:clamp(38px,10vw,64px)}
+.hero h1::after{content:"";display:block;width:84px;height:2px;margin-top:18px;background:linear-gradient(90deg,var(--sun),transparent)}
+.qs h1,.hero.sm h1{font-size:clamp(28px,7.5vw,40px)}
+h2,legend,.blk b,.top>b{font-family:Jost,sans-serif;font-weight:500;letter-spacing:.14em;text-transform:uppercase}
+h2{font-size:18px}legend{font-size:15px}.blk b{font-size:13px;color:var(--sun)}.top>b{font-size:14px}
+.wk{font-size:15px;color:var(--sun);display:flex;align-items:center;gap:12px}
+.wk::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--sun),transparent)}
+.btn{font-family:Jost,sans-serif;font-weight:500;font-size:14px;letter-spacing:.16em;text-transform:uppercase;border-radius:4px;padding:15px 28px}
+.card{border:1px solid #6B4F38;border-radius:4px;box-shadow:inset 0 0 0 5px var(--sf),inset 0 0 0 6px #3A434A}
+.scard{border-radius:4px;box-shadow:inset 0 0 0 5px #20262B,inset 0 0 0 6px #6B4F38}
+.scard h2{font-family:"Poiret One",Jost,sans-serif;font-weight:400;font-size:64px;letter-spacing:.06em}
+dialog{border:1px solid #6B4F38;border-radius:4px}.celc{border:1px solid #6B4F38;border-radius:4px}
+input[type=email],input[type=text]{border-radius:4px}
+.day{border-radius:4px;font:500 24px Jost,sans-serif}
+.day small{font-size:9px;letter-spacing:.1em;text-transform:uppercase}
+.nav,.nav button{border-radius:6px}.nav button{font-weight:500}
+.qo{font:500 17px Jost,sans-serif;letter-spacing:.04em;border-radius:4px}
+.qo::after{border-radius:0;width:13px;height:13px;transform:rotate(45deg)}
+.qo.on::after{transform:rotate(45deg) scale(1.15)}
+.quote{font-weight:400;font-size:20px;letter-spacing:.03em}
+.warn{border-radius:4px}.price{font-weight:500}
+.glasses{display:flex;gap:6px;margin-top:12px}
+.gl{flex:1;min-width:0;max-width:40px;height:42px;padding:0;border:2px solid var(--bd);border-radius:2px 2px 10px 10px;background:linear-gradient(to top,#7CC8DE var(--f),transparent var(--f));cursor:pointer;transition:border-color .2s,transform .15s}
+.gl:hover{border-color:#7CC8DE}.gl:active{transform:scale(.9)}
+.tm,.tm .celc{animation:none}.tmc{width:min(92vw,380px)}.tmc h2{margin:4px 0}
+.ring{position:relative;width:200px;height:200px;margin:12px auto}.ring svg{width:100%;height:100%}.ring span{position:absolute;inset:0;display:grid;place-items:center;font:500 50px Jost,sans-serif;letter-spacing:.04em}
+.stp{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:8px 0;font-size:14px}.stp span:last-child{display:flex;align-items:center;gap:10px}.stp b{min-width:34px;font-weight:600}
+.stp button{width:36px;height:36px;border-radius:4px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);font-size:20px;cursor:pointer}
+.tmc .btn{margin:8px 4px 0;padding:12px 18px;font-size:12px}
+h1.long,.qs h1{text-transform:none;letter-spacing:.02em;font-size:clamp(27px,7.2vw,38px);line-height:1.2;-webkit-text-stroke:.5px currentColor}
+.load h1.long{font-size:clamp(26px,7vw,36px);max-width:16em;margin:0 auto 12px}.load h1::after{margin-left:auto;margin-right:auto}
+
+.lnk{background:none;border:0;color:var(--sun);text-decoration:underline;font:inherit;cursor:pointer;padding:0}
+textarea{width:100%;min-height:110px;font:13px/1.4 monospace;padding:10px;border-radius:4px;border:2px solid var(--bd);background:var(--bg);color:var(--tx);word-break:break-all}
+</style>
+</head>
+<body>
+<main><div class="sun" aria-hidden="true"></div><div id="app"></div></main>
+<dialog id="dlg"></dialog>
+<script>
+var KEY="shape-verao-v1",S={uid:"",email:"",quiz:null,done:{},view:"",start:"",w:[],gw:0,wa:{},tab:"cal"};
+var CFG=window.APP_CONFIG||{},sb=null,SYNC="",stimer=null,LS={step:"email",email:"",msg:""};
+try{sb=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey)}catch(e){}
+function payload(){return{quiz:S.quiz,done:S.done,start:S.start,w:S.w,gw:S.gw,wa:S.wa,ts:Date.now()}}
+function applyData(d){d=d||{};S.quiz=d.quiz||null;S.done=d.done||{};S.start=d.start||"";S.w=d.w||[];S.gw=d.gw||0;S.wa=d.wa||{}}
+function lk(e){return KEY+"::"+e.toLowerCase()}
+function localData(e){try{return JSON.parse(localStorage.getItem(lk(e))||"null")}catch(x){return null}}
+function setSync(t){SYNC=t;var el=document.getElementById("sync");if(el)el.textContent=t}
+function save(){if(!S.email)return;try{localStorage.setItem(lk(S.email),JSON.stringify(payload()))}catch(e){}
+if(!sb||!S.uid)return;setSync("Salvando na nuvem…");clearTimeout(stimer);stimer=setTimeout(push,700)}
+function push(){if(!sb||!S.uid)return;sb.from("progress").upsert({user_id:S.uid,data:payload(),updated_at:new Date().toISOString()}).then(function(r){setSync(r.error?"Sem conexão: salvo só neste aparelho. Vamos tentar de novo.":"Progresso salvo na nuvem ✓");if(r.error)setTimeout(push,15000)},function(){setSync("Sem conexão: salvo só neste aparelho. Vamos tentar de novo.");setTimeout(push,15000)})}
+async function loadCloud(){var r=await sb.from("progress").select("data").eq("user_id",S.uid).maybeSingle(),loc=localData(S.email);
+if(r.error){applyData(loc);setSync("Sem conexão: usando os dados deste aparelho.");return}
+var cl=r.data&&r.data.data;if(cl&&(!loc||(cl.ts||0)>=(loc.ts||0)))applyData(cl);else{applyData(loc);if(loc)push()}
+setSync("Progresso salvo na nuvem ✓")}
+async function enter(session){var a;try{a=await sb.rpc("has_access")}catch(e){a={error:e}}
+if(a.error){LS.msg="Não foi possível verificar seu acesso. Confira a internet e tente de novo.";return render()}
+if(!a.data){await sb.auth.signOut();S.uid="";S.email="";LS={step:"email",email:"",msg:"Seu acesso não está ativo para este e-mail. Use o e-mail da compra."};return render()}
+S.email=(session.user.email||"").toLowerCase();S.uid=session.user.id;await loadCloud();S.view=S.quiz?"":"thanks";S.tab="cal";LS={step:"email",email:"",msg:""};render()}
+function signOut(){var f=function(){S.email="";S.uid="";applyData(null);S.view="";S.tab="cal";LS={step:"email",email:"",msg:""};render()};if(sb)sb.auth.signOut().then(f,f);else f()}
+function esc(t){var d=document.createElement("div");d.textContent=t;return d.innerHTML}
+var $=function(s){return document.querySelector(s)},app=$("#app");
+
+var HEALTH=[["diabetes","Diabetes"],["pressao","Pressão alta"],["cardio","Problema cardíaco"],["joelho","Dor no joelho ou articulações"],["lombar","Dor lombar ou na coluna"],["gestante","Gestante ou lactante"],["nenhuma","Nenhuma"]];
+var ALERG=[["gluten","Glúten"],["lactose","Lactose"],["ovo","Ovo"],["nuts","Amendoim e castanhas"],["mar","Peixes e frutos do mar"],["nenhuma","Nenhuma"]];
+var GOALS=[["emagrecer","Emagrecer"],["definir","Definir o corpo"],["resistencia","Ganhar resistência"],["desinchar","Desinchar e ter leveza"]];
+var LEVELS=[["sed","Sedentário"],["ini","Iniciante"],["ativo","Já treino"]];
+var TIMES=[["20","20 min"],["30","30 min"],["45","45 min"]];
+
+function opts(name,list,type,sel){return list.map(function(o){var c=sel&&(Array.isArray(sel)?sel.indexOf(o[0])>-1:sel===o[0])?" checked":"";return '<label class="opt"><input type="'+type+'" name="'+name+'" value="'+o[0]+'"'+c+'>'+o[1]+'</label>'}).join("")}
+
+function viewLogin(){
+var h='<section class="hero"><h1>Protocolo Shape no Verão</h1><p class="lead">30 dias de treino, alimentação e hábitos montados para o seu corpo e a sua rotina.</p></section><div class="card">';
+if(LS.step==="email")h+='<label class="f" for="em">E-mail usado na compra</label><input id="em" type="email" autocomplete="email" value="'+esc(LS.email)+'" placeholder="voce@email.com"><p id="err" class="small" role="alert">'+esc(LS.msg)+'</p><button class="btn" id="go">Receber código de acesso</button>'+(CFG.buyUrl?'<p class="small" style="margin-top:14px">Ainda não comprou? <a class="lnk" href="'+esc(CFG.buyUrl)+'">Conheça o protocolo</a></p>':'');
+else h+='<p>Enviamos um código para <b>'+esc(LS.email)+'</b>. Digite abaixo. Confira também o spam.</p><label class="f" for="cd">Código de acesso</label><input id="cd" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="000000"><p id="err" class="small" role="alert">'+esc(LS.msg)+'</p><button class="btn" id="vf">Entrar</button><p class="small" style="margin-top:14px"><button class="lnk" id="bk3">Usar outro e-mail</button></p>';
+app.innerHTML=h+'</div>';
+function err(t){$("#err").textContent=t}
+if(LS.step==="email"){$("#go").onclick=async function(){var v=$("#em").value.trim().toLowerCase();if(v.indexOf("@")<1){err("Digite um e-mail válido, como voce@email.com.");return}
+if(!sb){err("O app ainda não está configurado.");return}
+var b=$("#go");b.disabled=true;err("Verificando…");
+try{var a=await sb.rpc("email_has_access",{p_email:v});if(a.error){err("Não foi possível verificar agora. Tente novamente.");b.disabled=false;return}
+if(!a.data){err("Não encontramos uma compra aprovada com este e-mail. Use o mesmo e-mail da compra.");b.disabled=false;return}
+var o=await sb.auth.signInWithOtp({email:v,options:{shouldCreateUser:true}});if(o.error){err(/rate|seconds/i.test(o.error.message)?"Aguarde 1 minuto para pedir outro código.":"Não foi possível enviar o código. Tente novamente.");b.disabled=false;return}
+LS={step:"code",email:v,msg:""};render()}catch(e){err("Sem conexão. Tente novamente.");b.disabled=false}};
+$("#em").onkeydown=function(e){if(e.key==="Enter")$("#go").click()}}
+else{$("#vf").onclick=async function(){var c=$("#cd").value.replace(/\D/g,"");if(c.length<6){err("Digite o código completo.");return}
+var b=$("#vf");b.disabled=true;err("Entrando…");
+try{var r=await sb.auth.verifyOtp({email:LS.email,token:c,type:"email"});if(r.error||!r.data.session){err("Código inválido ou expirado. Peça um novo.");b.disabled=false;return}
+await enter(r.data.session)}catch(e){err("Sem conexão. Tente novamente.");b.disabled=false}};
+$("#cd").onkeydown=function(e){if(e.key==="Enter")$("#vf").click()};
+$("#bk3").onclick=function(){LS={step:"email",email:"",msg:""};render()}}}
+
+function viewThanks(){
+var n=S.email.split("@")[0].replace(/[._\d-]+/g," ").trim().split(" ")[0]||"";n=n?n[0].toUpperCase()+n.slice(1):"";
+app.innerHTML='<section class="hero"><h1 class="long">Obrigado pela compra'+(n?', '+esc(n):'')+'!</h1><p class="lead">Seu acesso está liberado. Todo dia o app libera 2 novos dias do protocolo. Antes de montar o seu calendário, responda 4 perguntas rápidas sobre saúde, alergias e objetivo.</p><button class="btn" id="nx">Começar o questionário</button></section>';
+$("#nx").onclick=function(){S.view="quiz";render()}}
+
+function viewQuiz(){
+var q=S.quiz||{};
+app.innerHTML='<section class="hero"><h1>Conte sobre você</h1><p class="lead">As respostas definem os treinos, as refeições e os cuidados de cada dia.</p></section><div class="card" id="qz">'+
+'<fieldset><legend>Condições de saúde</legend><div class="opts">'+opts("h",HEALTH,"checkbox",q.h)+'</div></fieldset>'+
+'<fieldset><legend>Alergias alimentares</legend><div class="opts">'+opts("a",ALERG,"checkbox",q.a)+'</div><p class="small" style="margin-top:10px">Outra alergia ou restrição?</p><input type="text" id="ou" placeholder="Ex.: soja, morango" value="'+esc(q.o||"")+'"></fieldset>'+
+'<fieldset><legend>Objetivo para os 30 dias</legend><div class="opts">'+opts("g",GOALS,"radio",q.g||"emagrecer")+'</div></fieldset>'+
+'<fieldset><legend>Seu nível hoje</legend><div class="opts">'+opts("l",LEVELS,"radio",q.l||"ini")+'</div></fieldset>'+
+'<fieldset><legend>Tempo de treino por dia</legend><div class="opts">'+opts("t",TIMES,"radio",q.t||"30")+'</div></fieldset>'+
+'<p class="small">Este app não substitui avaliação médica ou nutricional. Se tem condição de saúde, converse com seu médico antes de começar.</p><button class="btn" id="mk">Criar meu calendário</button></div>';
+$("#mk").onclick=function(){
+var g=function(n){return Array.prototype.map.call(document.querySelectorAll('#qz input[name="'+n+'"]:checked'),function(i){return i.value})};
+var h=g("h").filter(function(x){return x!=="nenhuma"}),a=g("a").filter(function(x){return x!=="nenhuma"});
+S.quiz={h:h,a:a,o:$("#ou").value.trim(),g:g("g")[0]||"emagrecer",l:g("l")[0]||"ini",t:g("t")[0]||"30"};
+S.done={};S.view="";S.tab="cal";if(!S.start)S.start=today();save();render();window.scrollTo(0,0)}}
+
+var CAFE=["Tapioca com frango desfiado|","Banana amassada com canela e chia|","Cuscuz com ovo e uma fruta|ovo","Iogurte natural com frutas e chia|lactose","Ovos mexidos com tomate e pão integral|ovo,gluten","Vitamina de banana com aveia e pasta de amendoim|lactose,nuts,gluten"];
+var ALMO=["Frango grelhado, arroz, feijão e salada colorida|","Carne magra com arroz integral e brócolis|","Peixe assado com batata-doce e legumes|mar","Omelete de legumes com mandioca e salada|ovo","Macarrão integral com frango e legumes|gluten","Strogonoff leve de frango com arroz e salada|lactose"];
+var LANC=["Melancia ou abacaxi em cubos|","Água de coco e uma fruta|","Ovo cozido e cenoura|ovo","Fruta e um punhado de castanhas|nuts","Pão integral com peito de peru|gluten","Iogurte natural com granola|lactose,gluten"];
+var JANT=["Sopa de legumes com frango|","Frango ao forno com abobrinha e purê de abóbora|","Carne moída com chuchu e arroz|","Omelete de espinafre com salada|ovo","Tilápia grelhada com legumes salteados|mar","Salada grande com atum e grão-de-bico|mar"];
+var HAB=["Beba um copo de água ao acordar.","Durma de 7 a 8 horas hoje.","Evite refrigerante e suco de caixinha.","Mastigue devagar e pare quando estiver satisfeito.","Coloque proteína em todas as refeições.","Pegue 10 minutos de sol com protetor solar.","Deixe as telas 30 minutos antes de dormir.","Prepare as refeições de amanhã.","Anote como seu corpo e seu humor estão hoje.","Suba escadas ou faça uma caminhada extra de 10 minutos."];
+var CYC={emagrecer:["cardio","pernas","cardio","superiores","circuito","core","descanso"],definir:["pernas","superiores","core","circuito","pernas","cardio","descanso"],resistencia:["cardio","circuito","cardio","pernas","cardio","core","descanso"],desinchar:["caminhada","pernas","mobilidade","cardio","superiores","mobilidade","descanso"]};
+var NOMES={cardio:"Cardio",pernas:"Pernas e glúteos",superiores:"Superiores",core:"Abdômen e core",circuito:"Circuito",caminhada:"Caminhada",mobilidade:"Mobilidade",descanso:"Descanso ativo",final:"Avaliação final"};
+var TEMAS=["Semana 1: adaptação","Semana 2: ritmo","Semana 3: intensidade","Semana 4: definição","Fechamento"];
+
+function pick(list,d,al,off){var ok=list.map(function(s){var p=s.split("|");return{t:p[0],g:p[1]?p[1].split(","):[]}}).filter(function(m){return !m.g.some(function(x){return al.indexOf(x)>-1})});return ok.length?ok[(d+off)%ok.length].t:"Monte uma refeição simples com ingredientes seguros para você."}
+
+function treino(tp,q,low,sets){
+var h=q.h;
+var T={cardio:low?"Caminhada firme, bicicleta ou natação em ritmo moderado.":"Corrida leve ou caminhada rápida, alternando 1 min forte e 2 min leve.",
+pernas:low?"Agachamento na cadeira, ponte de glúteos, abdução lateral e elevação de panturrilha: "+sets+" séries de 12.":"Agachamento, afundo, sumô, ponte de glúteos e panturrilha: "+sets+" séries de 12.",
+superiores:"Flexão de braço (com joelhos no chão se precisar), remada com garrafa ou halter, desenvolvimento de ombros e tríceps no banco: "+sets+" séries de 10 a 12.",
+core:h.indexOf("lombar")>-1?"Bird-dog, ponte, prancha de joelhos e respiração abdominal: "+sets+" séries de 30 s.":"Prancha, abdominal bicicleta, prancha lateral e elevação de pernas: "+sets+" séries de 30 a 40 s.",
+circuito:low?"Circuito leve (40 s ativo, 20 s pausa): marcha elevada sem impacto, agachamento na cadeira, remada e ponte: "+sets+" voltas.":"Circuito (40 s ativo, 20 s pausa): polichinelo, agachamento, flexão, afundo e mountain climber: "+sets+" voltas.",
+caminhada:"Caminhada em ritmo confortável ao ar livre.",
+mobilidade:"Alongamento global, mobilidade de quadril, ombros e coluna, com respiração profunda.",
+descanso:"Descanso ativo: caminhada leve de 20 minutos e alongamento. O corpo muda na recuperação.",
+final:"Repita o seu treino favorito da jornada e compare como você se sente hoje com o dia 1."};
+return T[tp]}
+
+function buildDay(d){
+var q=S.quiz,al=q.a.slice(),wk=Math.min(4,Math.ceil(d/7)),pg=q.h.indexOf("gestante")>-1;
+var low=pg||q.h.some(function(x){return["joelho","lombar","pressao","cardio"].indexOf(x)>-1});
+var tp=d===30?"final":CYC[q.g][(d-1)%7];
+if(pg&&["circuito","core","cardio","superiores","pernas"].indexOf(tp)>-1)tp=(d%2?"caminhada":"mobilidade");
+var sets=Math.min(4,(q.l==="ativo"?3:2)+(wk>=3?1:0));
+var mins=tp==="descanso"?20:parseInt(q.t,10)+(wk>=3&&q.l==="ativo"?5:0);
+var notes=[];
+if(pg)notes.push("Treino adaptado para gestantes e lactantes. Libere com seu médico e evite esforço intenso.");
+if(q.h.indexOf("cardio")>-1)notes.push("Com problema cardíaco, só treine com liberação médica e pare se sentir dor no peito ou falta de ar.");
+if(q.h.indexOf("pressao")>-1)notes.push("Pressão alta: reduza o sal, evite prender a respiração e faça os exercícios sem pressa.");
+if(q.h.indexOf("diabetes")>-1)notes.push("Diabetes: evite açúcar e suco, mantenha horários regulares e siga a orientação do seu médico sobre treino e glicemia.");
+if(q.h.indexOf("joelho")>-1)notes.push("Joelhos e articulações: sem impacto, faça os movimentos curtos e sem dor.");
+if(q.h.indexOf("lombar")>-1)notes.push("Coluna: mantenha o abdômen firme e pare se sentir dor lombar.");
+if(q.o)notes.push("Evite também: "+q.o+".");
+return{d:d,tp:tp,rest:tp==="descanso",tema:TEMAS[d>28?4:wk-1],treino:treino(tp,q,low,sets),mins:mins,
+cafe:pick(CAFE,d,al,0),almo:pick(ALMO,d,al,d%3),lanc:pick(LANC,d,al,1),jant:pick(JANT,d,al,2),
+agua:q.h.indexOf("diabetes")>-1||q.h.indexOf("pressao")>-1?"Cerca de 2 L, ou o que seu médico indicar.":"2,5 L ao longo do dia.",
+hab:HAB[(d-1)%HAB.length],notes:notes}}
+
+function viewCal(){if(S.tab&&S.tab!=="cal")return viewTab();var UN=unlocked();
+var n=Object.keys(S.done).length,gl=GOALS.filter(function(g){return g[0]===S.quiz.g})[0][1];
+var h=nav()+'<section class="hero"><h1 class="long">Seu protocolo de 30 dias</h1><p class="lead">Foco: '+esc(gl.toLowerCase())+'. Toque em um dia para ver o treino, as refeições e o hábito. '+(UN<30?lockMsg(UN):'Todos os dias já estão liberados. Você chegou ao fim da jornada!')+'</p></section>';
+h+='<div class="card"><div class="top"><b>'+n+' de 30 dias concluídos</b><span class="small">'+Math.round(n/30*100)+'%</span></div><div class="bar" role="progressbar" aria-valuenow="'+n+'" aria-valuemin="0" aria-valuemax="30"><i style="width:'+(n/30*100)+'%"></i></div></div>';
+h+='<div class="card"><span class="small">Frase de hoje</span><p class="quote">'+MOT[UN-1]+'</p></div>'+waterCard()+shelf();
+for(var w=0;w<5;w++){var a=w*7+1,b=Math.min(30,a+6);if(a>30)break;
+h+='<h2 class="wk">'+TEMAS[w]+'</h2><div class="grid">';
+for(var d=a;d<=b;d++){var x=buildDay(d),lk=d>UN;h+='<button class="day'+(x.rest?' rest':'')+(S.done[d]?' done':'')+(lk?' lock':'')+'"'+(lk?' disabled':'')+' data-d="'+d+'" aria-label="Dia '+d+', '+NOMES[x.tp]+(lk?', bloqueado':'')+(S.done[d]?', concluído':'')+'">'+(S.done[d]?'✓ ':'')+d+'<small>'+(lk?'🔒':NOMES[x.tp].split(" ")[0])+'</small></button>'}
+h+='</div>'}
+h+='<p class="small" style="margin-top:28px">Este app não substitui avaliação médica ou nutricional.</p><p class="small" id="sync" role="status">'+esc(SYNC)+'</p><div class="top"><button class="btn alt" id="rq">Refazer questionário</button><button class="btn alt" id="lo">Sair</button></div>';
+app.innerHTML=h;
+Array.prototype.forEach.call(document.querySelectorAll(".day"),function(b){b.onclick=function(){openDay(+b.dataset.d)}});
+bindNav();bindWater();$("#rq").onclick=function(){var dl=$("#dlg");dl.innerHTML='<h2>Refazer o questionário?</h2><p>Seus dias concluídos, medalhas, pesos e copos de água continuam salvos.</p><p>Mas os treinos, as refeições e os avisos de todos os dias serão recalculados com as novas respostas. O conteúdo dos dias que você já fez pode mudar.</p><div class="top"><button class="btn" id="rqok">Refazer</button><button class="btn alt" id="rqno">Cancelar</button></div>';dl.showModal();$("#rqno").onclick=function(){dl.close()};$("#rqok").onclick=function(){dl.close();QA=null;S.view="quiz";render()}};
+$("#lo").onclick=signOut}
+
+function openDay(d){
+var x=buildDay(d),dl=$("#dlg");
+dl.innerHTML='<h2>Dia '+d+': '+NOMES[x.tp]+'</h2><p class="small">'+x.tema+'</p><p class="quote">'+MOT[d-1]+'</p>'+
+'<div class="blk"><b>Treino ('+x.mins+' min)</b>'+(x.rest?'':'Aquecimento de 5 min. ')+esc(x.treino)+'</div>'+
+'<div class="blk"><b>Alimentação</b>Café: '+esc(x.cafe)+'<br>Almoço: '+esc(x.almo)+'<br>Lanche: '+esc(x.lanc)+'<br>Jantar: '+esc(x.jant)+'</div>'+
+'<details class="blk"><summary><b style="display:inline">Passo a passo para iniciantes</b></summary>'+guide(x.tp)+'</details>'+'<div class="blk"><b>Hidratação</b>'+x.agua+'</div><div class="blk"><b>Hábito do dia</b>'+x.hab+'</div>'+
+x.notes.map(function(t){return '<div class="warn">'+esc(t)+'</div>'}).join("")+
+'<div class="top"><button class="btn" id="ck">'+(S.done[d]?'Desmarcar dia':'Concluir dia '+d)+'</button><button class="btn alt" id="tm">Cronômetro</button><button class="btn alt" id="cl">Fechar</button></div>';
+dl.showModal();
+$("#cl").onclick=function(){dl.close()};
+if($("#tm"))$("#tm").onclick=function(){dl.close();timer(x)};
+$("#ck").onclick=function(){if(S.done[d])delete S.done[d];else S.done[d]=1;save();dl.close();render();if(S.done[d])celebrate(d)}}
+
+function render(){
+if(!S.email)viewLogin();else if(S.view==="thanks")viewThanks();else if(!S.quiz||S.view==="quiz")viewQuiz();else viewCal()}
+function today(){var d=new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}
+function unlocked(){var e=Math.round((new Date(today()+"T00:00:00")-new Date((S.start||today())+"T00:00:00"))/864e5);var dl=Math.min(30,(Math.max(0,e)+1)*2),k=0;while(k<15&&S.done[2*k+1]&&S.done[2*k+2])k++;return Math.min(dl,2*(k+1))}
+var IC=function(p){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>'};
+var TABS=[["cal","Calendário",IC('<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/>'),"Calendário"],["peso","Peso",IC('<rect x="3.5" y="4" width="17" height="16.5" rx="4"/><path d="M8.5 9.5a5 5 0 0 1 7 0M12 13l2-2.5"/>'),"Peso"],["rec","Receitas",IC('<path d="M3.5 12h17a8.5 8.5 0 0 1-17 0zM8 8c0-1.5 1-2 1-3.5M12 8c0-1.5 1-2 1-3.5M16 8c0-1.5 1-2 1-3.5"/>'),"Receitas"],["ex","Treinos",IC('<path d="M6.5 6.5v11M17.5 6.5v11M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/>'),"Exercícios"],["loja","Loja",IC('<path d="M5 8h14l-1 12H6zM9 8V6.5a3 3 0 0 1 6 0V8"/>'),"Loja"],["share","Postar",IC('<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 10.8l7.6-3.6M8.2 13.2l7.6 3.6"/>'),"Compartilhar"]];
+function nav(){return '<nav class="nav" aria-label="Seções">'+TABS.map(function(t){return '<button data-t="'+t[0]+'"'+((S.tab||"cal")===t[0]?' aria-current="page"':'')+' aria-label="'+t[3]+'"><span class="ti" aria-hidden="true">'+t[2]+'</span>'+t[1]+'</button>'}).join("")+'</nav>'}
+function bindNav(){Array.prototype.forEach.call(document.querySelectorAll(".nav button"),function(b){b.onclick=function(){S.tab=b.dataset.t;render();window.scrollTo(0,0)}})}
+function viewTab(){var r={peso:tabPeso,rec:tabRec,ex:tabEx,loja:tabLoja,share:tabShare}[S.tab]();app.innerHTML=nav()+r.h;bindNav();if(r.f)r.f()}
+function num(s){return parseFloat(String(s).replace(",","."))}
+function kg(v){return String(Math.round(v*10)/10).replace(".",",")}
+function tabPeso(){var w=S.w,last=w.length?w[w.length-1].v:0,first=w.length?w[0].v:0,gw=S.gw,pct=0,msg="Registre seu primeiro peso para começar.";
+if(w.length&&gw&&first!==gw){pct=Math.max(0,Math.min(1,(first-last)/(first-gw)));msg=pct>=1?"Meta alcançada! Parabéns.":"Faltam "+kg(Math.abs(last-gw))+" kg para a meta."}else if(w.length)msg="Defina sua meta de peso para acompanhar a barra.";
+var h='<section class="hero sm"><h1>Meu progresso</h1><p class="lead">Pese-se sempre no mesmo horário, de preferência pela manhã. Uma perda saudável costuma ficar entre 0,5 e 1 kg por semana.</p></section><div class="card"><div class="top"><b>'+(w.length?kg(first)+' kg → '+kg(last)+' kg':'Sem registros')+'</b><span class="small">Meta: '+(gw?kg(gw)+' kg':'não definida')+'</span></div><div class="bar" role="progressbar" aria-valuenow="'+Math.round(pct*100)+'" aria-valuemin="0" aria-valuemax="100"><i style="width:'+pct*100+'%"></i></div><p class="small">'+msg+'</p></div><div class="card"><label class="f" for="pw">Peso de hoje (kg)</label><input id="pw" type="text" inputmode="decimal" placeholder="Ex.: 68,5"><label class="f" for="gw" style="margin-top:12px">Meta de peso (kg)</label><input id="gw" type="text" inputmode="decimal" placeholder="Ex.: 62" value="'+(gw?kg(gw):'')+'"><p id="we" class="small" role="alert"></p><button class="btn" id="sv">Salvar registro</button></div>';
+if(w.length)h+='<div class="card"><b>Histórico</b>'+w.slice(-10).reverse().map(function(r){var p=r.d.split("-");return '<div class="blk top"><span>'+p[2]+'/'+p[1]+'</span><b style="font-size:17px">'+kg(r.v)+' kg</b></div>'}).join("")+'</div>';
+return{h:h,f:function(){$("#sv").onclick=function(){var a=$("#pw").value.trim(),g=$("#gw").value.trim(),e=$("#we");
+if(a){var v=num(a);if(!(v>=30&&v<=300)){e.textContent="Digite um peso entre 30 e 300 kg.";return}S.w=S.w.filter(function(r){return r.d!==today()});S.w.push({d:today(),v:v})}
+if(g){var m=num(g);if(!(m>=30&&m<=300)){e.textContent="Digite uma meta entre 30 e 300 kg.";return}S.gw=m}
+if(!a&&!g){e.textContent="Digite o peso de hoje ou a sua meta.";return}save();render()}}}}
+var EX={cam:["Caminhada firme",["Fique ereto, olhe à frente e deixe os ombros relaxados.","Dê passos firmes e balance os braços naturalmente.","Mantenha um ritmo em que ainda consiga falar frases curtas."],"Comece com 10 minutos e some 2 a 3 minutos por semana."],
+agach:["Agachamento na cadeira",["Fique de costas para a cadeira, pés na largura dos ombros.","Leve o quadril para trás e desça devagar até encostar de leve no assento.","Empurre o chão com os pés e levante. Desça inspirando e suba soltando o ar."],"Se sentir dor no joelho, desça menos."],
+ponte:["Ponte de glúteos",["Deite de costas, joelhos dobrados e pés apoiados no chão.","Suba o quadril apertando os glúteos, até o corpo formar uma linha do ombro ao joelho.","Segure 2 segundos e desça devagar."],"Não force a lombar para cima."],
+pant:["Elevação de panturrilha",["Apoie as mãos numa parede ou cadeira.","Suba na ponta dos pés devagar.","Segure 1 segundo e desça com controle."],"Mantenha o corpo reto e olhe para frente."],
+flex:["Flexão com joelhos no chão",["Apoie as mãos no chão, um pouco mais abertas que os ombros, e os joelhos no chão.","Mantenha o corpo reto, dos joelhos à cabeça.","Dobre os cotovelos até o peito chegar perto do chão e empurre de volta."],"Se for difícil, faça a flexão em pé, com as mãos na parede."],
+rem:["Remada com garrafa",["Segure uma garrafa de água em cada mão e incline o tronco com a coluna reta.","Puxe os cotovelos para trás, aproximando as escápulas.","Desça devagar, sem balançar o corpo."],"Comece com garrafas de 500 ml."],
+pran:["Prancha de joelhos",["Apoie os antebraços no chão, com os cotovelos sob os ombros, e os joelhos no chão.","Contraia o abdômen e mantenha o corpo reto.","Segure pelo tempo indicado, respirando normalmente."],"Pare se a lombar doer ou começar a arquear."],
+bird:["Bird-dog",["Fique de quatro apoios, com as mãos sob os ombros e os joelhos sob o quadril.","Estenda o braço direito e a perna esquerda ao mesmo tempo.","Segure 2 segundos, volte devagar e troque de lado."],"Mantenha o quadril parado, sem girar."],
+gato:["Gato e vaca",["Fique de quatro apoios.","Solte o ar arredondando as costas e olhando para o umbigo.","Puxe o ar abrindo o peito e olhando um pouco para frente."],"Faça 10 repetições, bem devagar."],
+alon:["Alongamento de posterior de coxa",["Sente no chão com uma perna esticada e a outra dobrada.","Incline o tronco devagar em direção ao pé da perna esticada.","Segure 30 segundos e troque de perna."],"Alongue até sentir tensão leve, nunca dor."]};
+Object.assign(EX,{afun:["Afundo",["Em pé, dê um passo largo à frente.","Dobre os dois joelhos até cerca de 90 graus, com o joelho da frente alinhado ao pé.","Empurre o chão com o pé da frente e volte. Troque de perna."],"Se perder o equilíbrio, apoie a mão numa parede."],
+sumo:["Agachamento sumô",["Abra os pés além da largura dos ombros, com as pontas dos pés para fora.","Dobre os joelhos na direção dos pés e desça com o tronco reto.","Suba apertando os glúteos e a parte interna das coxas."],"Desça só até onde estiver confortável."],
+poli:["Polichinelo sem impacto",["Em pé, com os pés juntos e os braços ao lado do corpo.","Dê um passo lateral com a perna direita enquanto levanta os braços acima da cabeça.","Volte e repita para o outro lado, em ritmo constante, sem pular."],"Quer mais intensidade? Faça com um salto leve."],
+mont:["Mountain climber lento",["Apoie as mãos no chão, sob os ombros, com o corpo em linha reta.","Leve um joelho em direção ao peito, devagar.","Volte e troque de perna, sem deixar o quadril subir."],"Se for forte demais, apoie as mãos num sofá ou banco."],
+bici:["Abdominal bicicleta",["Deite de costas, com as mãos leves atrás da cabeça e as pernas dobradas.","Leve o cotovelo direito em direção ao joelho esquerdo, esticando a outra perna.","Troque de lado devagar, sem puxar o pescoço."],"A lombar deve ficar apoiada no chão."],
+plat:["Prancha lateral",["Deite de lado, com o cotovelo sob o ombro e os joelhos dobrados.","Suba o quadril até formar uma linha reta do joelho à cabeça.","Segure pelo tempo indicado e troque de lado."],"Mantenha os joelhos apoiados para facilitar."],
+elev:["Elevação de pernas",["Deite de costas, com as pernas esticadas e as mãos sob o quadril.","Suba as pernas até a vertical, contraindo o abdômen.","Desça devagar, sem encostar os pés no chão."],"Se a lombar descolar do chão, dobre os joelhos."],
+dese:["Desenvolvimento de ombros",["Em pé, segure uma garrafa em cada mão na altura dos ombros.","Empurre as garrafas para cima até esticar os braços.","Desça devagar, sem arquear as costas."],"Comece com garrafas de 500 ml."],
+tric:["Tríceps no banco",["Sente na ponta de uma cadeira firme, encostada na parede, com as mãos ao lado do quadril.","Deslize o quadril para frente e dobre os cotovelos, descendo alguns centímetros.","Estique os braços para subir."],"Mantenha os cotovelos apontando para trás e os pés bem apoiados."],
+lat:["Elevação lateral de ombro",["Em pé, com uma garrafa em cada mão ao lado do corpo.","Levante os braços até a altura dos ombros, com os cotovelos levemente dobrados.","Desça devagar."],"Não suba os ombros em direção às orelhas."],
+marc:["Marcha no lugar",["Em pé, com a postura ereta.","Levante um joelho de cada vez, até onde for confortável, balançando os braços.","Mantenha um ritmo constante, sem impacto."],"Ótima opção para dias de dor nas articulações."],
+aquad:["Alongamento de quadríceps",["Em pé, apoie uma mão na parede.","Dobre um joelho e segure o pé atrás do corpo.","Mantenha os joelhos juntos e segure 30 segundos. Troque de perna."],"Não force se sentir dor no joelho."],
+apeit:["Alongamento de peitoral",["Em pé, apoie o antebraço no batente de uma porta, com o cotovelo na altura do ombro.","Gire o tronco devagar para o lado oposto.","Segure 30 segundos e troque de lado."],"Respire fundo e relaxe os ombros."],
+aglut:["Alongamento de glúteos",["Deite de costas, com os joelhos dobrados.","Cruze o tornozelo direito sobre o joelho esquerdo.","Puxe a coxa esquerda em direção ao peito e segure 30 segundos. Troque de lado."],"Mantenha a cabeça apoiada no chão."],
+mquad:["Mobilidade de quadril",["Fique de quatro apoios.","Leve o quadril para trás, em direção aos calcanhares.","Volte e faça círculos lentos com o quadril, 8 vezes para cada lado."],"Movimentos pequenos e sem dor."],
+momb:["Mobilidade de ombros",["Em pé, com os braços relaxados ao lado do corpo.","Faça círculos grandes com os ombros para trás, 10 vezes.","Repita para frente e depois faça círculos com os braços esticados."],"Faça devagar, sem forçar."]});
+var GK={cardio:["cam","marc"],pernas:["agach","afun","sumo","ponte","pant"],superiores:["flex","rem","dese","tric","lat"],core:["pran","bird","bici","plat","elev"],circuito:["poli","marc","agach","rem","ponte","afun","mont"],caminhada:["cam"],mobilidade:["gato","alon","mquad","momb","aquad","apeit","aglut"],descanso:["cam","alon","aquad"],final:["cam","agach","flex"]};
+function exHtml(k){var e=EX[k];return '<p><b>'+e[0]+'</b></p><ol>'+e[1].map(function(s){return '<li>'+s+'</li>'}).join("")+'</ol><p class="small">Dica: '+e[2]+'</p>'}
+function guide(tp){var h=S.quiz.h,no=[];if(h.some(function(x){return["joelho","pressao","cardio","gestante"].indexOf(x)>-1}))no=no.concat(["afun","sumo","poli","mont"]);if(h.indexOf("lombar")>-1)no=no.concat(["elev","bici"]);
+return '<p class="small">Mostramos a versão mais fácil de cada movimento. Pare se sentir dor, tontura ou falta de ar.</p>'+GK[tp].filter(function(k){return no.indexOf(k)<0}).map(exHtml).join("")}
+function tabEx(){var h='<section class="hero sm"><h1>Exercícios</h1><p class="lead">Passo a passo dos movimentos do protocolo, na versão para iniciantes.</p></section><div class="card"><b>Antes de treinar</b><ol><li>Faça 5 minutos de aquecimento: marcha parada e giros de ombros e quadril.</li><li>Beba água e use tênis confortável.</li><li>Pare se sentir dor, tontura, falta de ar ou dor no peito.</li><li>Termine com 5 minutos de alongamento.</li></ol></div>';
+Object.keys(EX).filter(function(k){return hideEx().indexOf(k)<0}).forEach(function(k){h+='<details class="card"><summary><b>'+EX[k][0]+'</b></summary>'+exHtml(k)+'</details>'});return{h:h}}
+var RECS=[["Tapioca de frango","",["3 colheres de sopa de goma de tapioca","80 g de frango cozido e desfiado","Tomate picado e sal a gosto"],["Aqueça uma frigideira antiaderente em fogo médio, sem óleo.","Espalhe a goma formando um disco e espere firmar, cerca de 1 minuto.","Vire, coloque o frango e o tomate e dobre ao meio.","Sirva quente."]],
+["Omelete de legumes","ovo",["2 ovos","Espinafre e tomate picados","1 pitada de sal e 1 fio de azeite"],["Bata os ovos com o sal.","Aqueça a frigideira com o azeite em fogo baixo.","Despeje os ovos, adicione os legumes e tampe por 3 minutos.","Dobre ao meio quando a massa estiver firme."]],
+["Frango grelhado com legumes","",["150 g de peito de frango","Suco de 1/2 limão, 1 dente de alho e sal","1 abobrinha e 1 cenoura em fatias"],["Tempere o frango com limão, alho e sal e deixe 15 minutos.","Grelhe por 5 a 6 minutos de cada lado, até ficar bem cozido por dentro.","Cozinhe os legumes no vapor por 5 minutos.","Sirva com arroz e feijão, se desejar."]],
+["Sopa de legumes com frango","",["100 g de frango em cubos","1 batata, 1 cenoura e 1 chuchu","Cebola, alho, sal e 1 L de água"],["Refogue cebola e alho com um fio de azeite.","Junte o frango e mexa por 3 minutos.","Adicione os legumes picados e a água.","Cozinhe em fogo médio por 25 minutos, até ficar tudo macio."]],
+["Iogurte com frutas e chia","lactose",["1 pote de iogurte natural","1 fruta picada","1 colher de sopa de chia"],["Coloque o iogurte numa tigela.","Junte a fruta e a chia.","Espere 5 minutos para a chia hidratar e sirva."]],
+["Vitamina verde","",["1 folha de couve sem o talo","2 rodelas de abacaxi","Hortelã e 250 ml de água de coco gelada"],["Lave bem a couve, o abacaxi e a hortelã.","Bata tudo no liquidificador por 1 minuto.","Beba na hora, sem coar."]],
+["Peixe assado com batata-doce","mar",["1 filé de tilápia","1 batata-doce média","Limão, sal e ervas"],["Aqueça o forno a 200 °C.","Corte a batata em rodelas e asse por 15 minutos.","Tempere o peixe, coloque na assadeira e asse por mais 15 minutos, até ficar opaco e desmanchar com o garfo.","Sirva com salada."]]];
+function tabRec(){var al=S.quiz?S.quiz.a:[],h='<section class="hero sm"><h1>Receitas</h1><p class="lead">Receitas simples, para uma porção, já filtradas pelas suas alergias.</p></section>',n=0;
+RECS.forEach(function(r){if(r[1]&&al.indexOf(r[1])>-1){n++;return}h+='<details class="card"><summary><b>'+r[0]+'</b></summary><p><b>Ingredientes</b></p><ul>'+r[2].map(function(i){return '<li>'+i+'</li>'}).join("")+'</ul><p><b>Modo de preparo</b></p><ol>'+r[3].map(function(i){return '<li>'+i+'</li>'}).join("")+'</ol></details>'});
+h+='<p class="small" style="margin-top:18px">'+(n?n+' receita(s) escondida(s) por causa das suas alergias. ':'')+'Cozinhe carnes e peixes até ficarem bem cozidos e lave frutas e verduras. Se tem condição de saúde, confirme as quantidades com seu nutricionista.</p>';return{h:h}}
+// COLOQUE em u o link de pagamento de cada produto (Kiwify, Hotmart, Mercado Pago, Stripe etc.)
+var SHOP=[{e:"🏋️",n:"Kit com 3 faixas elásticas",d:"Resistência leve, média e forte para treinar pernas, glúteos e braços em casa.",p:"R$ 49,90",u:""},{e:"💧",n:"Garrafa de 2 litros com marcador",d:"Ajuda a bater a meta de água ao longo do dia.",p:"R$ 39,90",u:""},{e:"🧘",n:"Tapete de exercícios antiderrapante",d:"Conforto para prancha, ponte e alongamentos.",p:"R$ 59,90",u:""},{e:"🥗",n:"E-book: 30 receitas práticas de verão",d:"Receitas rápidas com lista de compras e passo a passo.",p:"R$ 29,90",u:""}];
+SHOP.forEach(function(p,i){p.u=(CFG.links||[])[i]||""});
+function tabLoja(){var h='<section class="hero sm"><h1>Loja</h1><p class="lead">Itens que ajudam você a seguir o protocolo.</p></section>';
+SHOP.forEach(function(p,i){h+='<div class="card"><div class="em" aria-hidden="true">'+p.e+'</div><b>'+p.n+'</b><p class="small">'+p.d+'</p><div class="top"><span class="price">'+p.p+'</span><button class="btn" style="margin:0" data-i="'+i+'">Comprar</button></div></div>'});
+return{h:h,f:function(){Array.prototype.forEach.call(document.querySelectorAll("[data-i]"),function(b){b.onclick=function(){var p=SHOP[+b.dataset.i];if(p.u){window.open(p.u,"_blank","noopener");return}var dl=$("#dlg");dl.innerHTML='<h2>'+p.n+'</h2><p>A venda deste produto abre em breve. Volte aqui em alguns dias.</p><button class="btn alt" id="cl">Fechar</button>';dl.showModal();$("#cl").onclick=function(){dl.close()}}})}}}
+function stText(){var n=Object.keys(S.done).length,w=S.w,t="Estou no Protocolo Shape no Verão ☀️ "+n+" de 30 dias concluídos";if(w.length>1&&w[0].v>w[w.length-1].v)t+=" e "+kg(w[0].v-w[w.length-1].v)+" kg a menos";var md=earned().map(function(i){return MED[i][0]}).join("");if(md)t+=" "+md;return t+". Venha comigo!"}
+function tabShare(){var n=Object.keys(S.done).length,w=S.w,dif=w.length>1?w[0].v-w[w.length-1].v:0,t=encodeURIComponent(stText()),u=encodeURIComponent(location.href);
+var h='<section class="hero sm"><h1>Compartilhar</h1><p class="lead">Mostre sua evolução. Para os stories do Instagram, tire um print do cartão abaixo.</p></section><div class="scard"><p>Protocolo Shape no Verão</p><h2>'+n+'/30</h2><p>dias concluídos'+(dif>0?' · '+kg(dif)+' kg a menos':'')+'</p><p class="smed">'+medStr()+'</p></div><div class="card"><button class="btn" id="sh">Compartilhar</button> <a class="btn alt" target="_blank" rel="noopener" href="https://wa.me/?text='+t+'%20'+u+'">WhatsApp</a><a class="btn alt" target="_blank" rel="noopener" href="https://www.facebook.com/sharer/sharer.php?u='+u+'">Facebook</a><a class="btn alt" target="_blank" rel="noopener" href="https://twitter.com/intent/tweet?text='+t+'&url='+u+'">X</a><button class="btn alt" id="cp">Copiar texto</button><p class="small" id="sm" role="status"></p></div>';
+return{h:h,f:function(){$("#cp").onclick=function(){var x=stText()+" "+location.href;try{navigator.clipboard.writeText(x).then(function(){$("#sm").textContent="Texto copiado. Cole onde quiser."},function(){$("#sm").textContent=x})}catch(e){$("#sm").textContent=x}};$("#sh").onclick=function(){if(navigator.share){navigator.share({title:"Protocolo Shape no Verão",text:stText(),url:location.href}).catch(function(){})}else $("#cp").click()}}}}
+var QS=[{k:"h",t:"Você tem alguma condição de saúde?",s:"Marque todas que se aplicam. Isso muda os treinos e os avisos.",m:1,o:HEALTH},{k:"a",t:"Tem alguma alergia alimentar?",s:"Vamos tirar esses alimentos do seu cardápio.",m:1,x:1,o:ALERG},{k:"g",t:"Qual é o seu objetivo nos 30 dias?",s:"",o:GOALS},{k:"l",t:"Como está o seu condicionamento hoje?",s:"",o:LEVELS},{k:"t",t:"Quanto tempo você tem para treinar por dia?",s:"",o:TIMES}];
+var QA=null,QI=0,QD=1;
+function qDone(){S.quiz={h:QA.h.filter(function(x){return x!=="nenhuma"}),a:QA.a.filter(function(x){return x!=="nenhuma"}),o:QA.o,g:QA.g,l:QA.l,t:QA.t};
+app.innerHTML='<section class="load"><div class="sunspin"></div><h1 class="long">Carregando seu protocolo para o verão</h1><p class="lead" style="margin:0 auto">Ajustando treinos e refeições para você.</p></section>';
+setTimeout(function(){S.view="";S.tab="cal";if(!S.start)S.start=today();save();QA=null;render();window.scrollTo(0,0)},1600)}
+function viewQuiz(){var q=S.quiz||{};
+if(!QA){QA={h:(q.h||[]).slice(),a:(q.a||[]).slice(),o:q.o||"",g:q.g||"emagrecer",l:q.l||"ini",t:q.t||"30"};QI=0;QD=1}
+var s=QS[QI],v=QA[s.k],last=QI===QS.length-1;
+app.innerHTML='<div class="qh"><button class="back" id="bk" aria-label="Voltar"'+(QI?'':' style="visibility:hidden"')+'>←</button><div class="qbar"><i style="width:'+(QI+1)/QS.length*100+'%"></i></div><span class="small">'+(QI+1)+'/'+QS.length+'</span></div><section class="qs '+(QD>0?'in-r':'in-l')+'"><h1>'+s.t+'</h1>'+(s.s?'<p class="lead">'+s.s+'</p>':'')+'<div class="qopts">'+s.o.map(function(o){var on=s.m?v.indexOf(o[0])>-1:v===o[0];return '<button class="qo'+(on?' on':'')+'" data-v="'+o[0]+'" aria-pressed="'+on+'">'+o[1]+'</button>'}).join("")+'</div>'+(s.x?'<p class="small" style="margin-top:14px">Outra alergia ou restrição?</p><input type="text" id="ou" placeholder="Ex.: soja, morango" value="'+esc(QA.o)+'">':'')+((s.m||last)?'<button class="btn" id="nx">'+(last?'Criar meu calendário':'Continuar')+'</button>':'')+(QI===0?'<p class="small" style="margin-top:18px">Este app não substitui avaliação médica ou nutricional.</p>':'')+'</section>';
+function keep(){if(s.x)QA.o=$("#ou").value.trim()}
+function nxt(){keep();if(last)return qDone();QI++;QD=1;window.scrollTo(0,0);viewQuiz()}
+$("#bk").onclick=function(){keep();QI--;QD=-1;viewQuiz()};
+if($("#nx"))$("#nx").onclick=nxt;
+var bs=document.querySelectorAll(".qo");
+function paint(f){Array.prototype.forEach.call(bs,function(c){var on=f(c);c.classList.toggle("on",on);c.setAttribute("aria-pressed",on)})}
+Array.prototype.forEach.call(bs,function(b){b.onclick=function(){var x=b.dataset.v;
+if(s.m){var a=QA[s.k];if(x==="nenhuma")a=a.indexOf(x)>-1?[]:[x];else{a=a.filter(function(y){return y!=="nenhuma"});var i=a.indexOf(x);if(i>-1)a.splice(i,1);else a.push(x)}QA[s.k]=a;paint(function(c){return a.indexOf(c.dataset.v)>-1})}
+else{QA[s.k]=x;paint(function(c){return c===b});if(!last)setTimeout(nxt,300)}}})}
+function confetti(n){var c=["#E8B98A","#C98B5E","#F3E6D8","#B9784A","#D9A06B"];for(var i=0;i<n;i++){var e=document.createElement("span");e.className="cf";e.style.left=Math.random()*100+"vw";e.style.background=c[i%5];e.style.animationDuration=(2+Math.random()*2)+"s";e.style.animationDelay=Math.random()*.6+"s";document.body.appendChild(e);setTimeout(function(x){x.remove()},5000,e)}}
+var WM=[["🌱","Semana 1 concluída!","A adaptação está feita. O mais difícil já passou."],["🔥","Semana 2 concluída!","Seu ritmo está firme. Continue assim."],["💪","Semana 3 concluída!","Você passou pela fase mais intensa."],["✨","Semana 4 concluída!","A definição está aparecendo. Faltam só 2 dias."],["🏆","Protocolo completo!","Você fez os 30 dias. Registre seu peso e compartilhe sua conquista."]];
+function celebrate(d){var w=Math.min(5,Math.ceil(d/7)),a=(w-1)*7+1,b=Math.min(30,w*7),ok=true,all=Object.keys(S.done).length>=30;
+for(var i=a;i<=b;i++)if(!S.done[i])ok=false;
+if(!ok&&!all){confetti(18);var t=document.createElement("div");t.className="toast";t.setAttribute("role","status");t.textContent="Dia "+d+" concluído ✓";document.body.appendChild(t);setTimeout(function(){t.remove()},2500);return}
+var m=all?WM[4]:WM[w-1];confetti(70);
+var o=document.createElement("div");o.className="cel";o.innerHTML='<div class="celc" role="dialog" aria-label="Comemoração"><div class="big medalpop">'+MED[all?4:w-1][0]+'</div><h2>'+m[1]+'</h2><p>Você ganhou a medalha '+MED[all?4:w-1][1]+'.</p><p>'+m[2]+'</p><button class="btn" id="cc">'+(all?'Compartilhar minha conquista':'Continuar')+'</button></div>';
+document.body.appendChild(o);$("#cc").focus();
+$("#cc").onclick=function(){o.remove();if(all){S.tab="share";render();window.scrollTo(0,0)}};o.onclick=function(e){if(e.target===o)o.remove()}}
+var MED=[["🥉","Bronze"],["🥈","Prata"],["🥇","Ouro"],["💎","Diamante"],["🏆","Campeã"]];
+var MOT=["Começar já é metade do caminho. Hoje você começa.","Constância vale mais que intensidade. Apareça de novo hoje.","Seu corpo agradece cada escolha boa que você faz.","Não precisa ser perfeito, precisa ser feito.","Cada treino é um voto no corpo que você quer ter.","Descanso também faz parte do resultado.","Uma semana inteira! Olhe para trás e veja quanto você já fez.","Disciplina é fazer mesmo quando a vontade não vem.","Você está mais forte do que ontem.","Beba água, respire fundo e siga em frente.","Pequenos hábitos constroem grandes mudanças.","O verão se prepara hoje, um dia de cada vez.","Sua única competição é a pessoa que você foi ontem.","A metade do caminho está logo ali. Continue.","Dia 15: você já provou que consegue.","Cansaço passa, orgulho fica.","Cuide de você como quem cuida de quem ama.","Confie no processo: o corpo responde ao tempo.","Você não está começando do zero, está recomeçando mais forte.","Foque no que você pode fazer hoje.","Três semanas de dedicação! Isso é força de vontade.","Reta final: mantenha o foco e o carinho consigo.","A motivação te coloca em movimento, o hábito te mantém.","Cada refeição é uma chance de se nutrir bem.","Respeite seu corpo e celebre o que ele já faz por você.","Falta pouco. Não solte agora.","Você está construindo uma versão mais leve de si.","Quatro semanas! Sinta orgulho da sua jornada.","Quase lá. Termine do jeito que começou: com vontade.","Você chegou! O melhor resultado é a rotina que você criou."];
+function shelf(){var h='<div class="card"><div class="top"><b>Suas medalhas</b><span class="small">Conclua a semana toda</span></div><div class="shelf">';
+for(var w=0;w<5;w++){var a=w*7+1,b=Math.min(30,a+6),ok=true;for(var k=a;k<=b;k++)if(!S.done[k])ok=false;h+='<div><div class="mdl'+(ok?' on':'')+'" role="img" aria-label="Medalha '+MED[w][1]+(ok?', conquistada':', bloqueada')+'">'+MED[w][0]+'</div><span class="small">'+MED[w][1]+'</span></div>'}return h+'</div></div>'}
+function earned(){var r=[];for(var w=0;w<5;w++){var a=w*7+1,b=Math.min(30,a+6),ok=true;for(var k=a;k<=b;k++)if(!S.done[k])ok=false;if(ok)r.push(w)}return r}
+function medStr(){var e=earned();return e.length?e.map(function(i){return MED[i][0]}).join(" "):"🌴"}
+function tmDef(x){var m=x.mins*60;if(["cardio","caminhada","final"].indexOf(x.tp)>-1)return[m,0,1];if(x.tp==="core")return[30,20,8];if(x.tp==="circuito")return[40,20,10];if(x.tp==="mobilidade"||x.tp==="descanso")return[30,10,10];return[40,20,9]}
+function timer(x){var c=tmDef(x),W=c[0],R=c[1],N=c[2],big=W>=300,ph="work",rd=1,t=W,run=false,iv=null,ac=null,o=document.createElement("div");
+o.className="cel tm";document.body.appendChild(o);
+function fmt(n){return Math.floor(n/60)+":"+("0"+n%60).slice(-2)}
+function beep(f,d){try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();var g=ac.createGain(),s=ac.createOscillator();s.frequency.value=f;s.connect(g);g.connect(ac.destination);g.gain.value=.2;s.start();s.stop(ac.currentTime+d)}catch(e){}}
+function close(){clearInterval(iv);o.remove()}
+function end(){clearInterval(iv);run=false;ph="end";t=0;beep(988,.6);try{if(navigator.vibrate)navigator.vibrate([200,100,200])}catch(e){}confetti(40)}
+function next(){if(ph==="work"){if(rd>=N)return end();if(R>0){ph="rest";t=R;beep(520,.3);return}rd++;t=W;beep(880,.3)}else{rd++;ph="work";t=W;beep(880,.3)}}
+function upd(){var C=2*Math.PI*88,tot=ph==="work"?W:R;$("#rg").setAttribute("stroke-dashoffset",C*(1-(tot?t/tot:0)));$("#tt").textContent=fmt(t)}
+function tick(){var a=ph,b=rd;t--;if(t>0&&t<=3)beep(700,.1);if(t<=0)next();if(a!==ph||b!==rd||ph==="end")draw();else upd()}
+function draw(){var C=2*Math.PI*88,tot=ph==="work"?W:R,e=ph==="end",fresh=!run&&ph==="work"&&rd===1&&t===W;
+var st=fresh?[["Esforço ("+(big?"min":"s")+")","w",big?W/60:W],["Pausa (s)","r",R],["Rodadas","n",N]].map(function(r){return '<div class="stp"><span>'+r[0]+'</span><span><button data-k="'+r[1]+'" data-d="-1" aria-label="Diminuir">−</button><b>'+r[2]+'</b><button data-k="'+r[1]+'" data-d="1" aria-label="Aumentar">+</button></span></div>'}).join(""):"";
+o.innerHTML='<div class="celc tmc" role="dialog" aria-label="Cronômetro de treino"><p class="small">'+(e?"Treino concluído":"Rodada "+rd+" de "+N)+'</p><h2>'+(e?"Parabéns!":ph==="work"?"Esforço":"Pausa")+'</h2><div class="ring"><svg viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="88" fill="none" stroke="var(--bd)" stroke-width="8"/><circle id="rg" cx="100" cy="100" r="88" fill="none" stroke="'+(ph==="rest"?"var(--mu)":"var(--sun)")+'" stroke-width="8" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+(e?0:C*(1-(tot?t/tot:0)))+'" transform="rotate(-90 100 100)"/></svg><span id="tt">'+(e?"✓":fmt(t))+'</span></div>'+st+(e?'':'<button class="btn" id="tg">'+(run?"Pausar":fresh?"Iniciar":"Continuar")+'</button>')+'<button class="btn alt" id="rs">Reiniciar</button><button class="btn alt" id="tx">Fechar</button></div>';
+$("#tx").onclick=close;
+$("#rs").onclick=function(){clearInterval(iv);run=false;ph="work";rd=1;t=W;draw()};
+if($("#tg"))$("#tg").onclick=function(){if(run){clearInterval(iv);run=false}else{run=true;beep(880,.2);iv=setInterval(tick,1000)}draw()};
+Array.prototype.forEach.call(o.querySelectorAll("[data-k]"),function(b){b.onclick=function(){var k=b.dataset.k,d=+b.dataset.d;if(k==="w"){W=Math.max(big?60:5,W+d*(big?60:5));t=W}else if(k==="r")R=Math.max(0,R+d*5);else N=Math.max(1,N+d);draw()}})}
+o.onclick=function(e){if(e.target===o)close()};draw()}
+function wGoal(){var h=S.quiz?S.quiz.h:[];return h.indexOf("diabetes")>-1||h.indexOf("pressao")>-1?8:10}
+function waterCard(){var g=wGoal(),n=Math.min(g,S.wa[today()]||0),h='<div class="card" id="wcard"><div class="top"><b>Água de hoje</b><span class="small">'+n+' de '+g+' copos ('+kg(n*.25)+' L)</span></div><div class="glasses">';
+for(var i=0;i<g;i++)h+='<button class="gl" data-g="'+i+'" style="--f:'+(i<n?100:0)+'%" aria-label="Copo '+(i+1)+(i<n?', bebido':'')+'" aria-pressed="'+(i<n)+'"></button>';
+return h+'</div><p class="small" style="margin-top:10px">'+(n>=g?'Meta de hoje batida! Parabéns.':'Cada copo tem 250 ml. Toque para registrar.')+'</p></div>'}
+function bindWater(){Array.prototype.forEach.call(document.querySelectorAll(".gl"),function(b){b.onclick=function(){var i=+b.dataset.g,k=today(),n=Math.min(wGoal(),S.wa[k]||0);S.wa[k]=n===i+1?i:i+1;save();document.getElementById("wcard").outerHTML=waterCard();bindWater();if(S.wa[k]>=wGoal()&&n<wGoal())confetti(30)}})}
+function hideEx(){var h=S.quiz?S.quiz.h:[],no=[];if(h.some(function(x){return["joelho","pressao","cardio","gestante"].indexOf(x)>-1}))no=no.concat(["afun","sumo","poli","mont"]);if(h.indexOf("lombar")>-1)no=no.concat(["elev","bici"]);return no}
+function lockMsg(U){var i=(U/2)%4,a=U-1,b=U,n1=U+1,n2=U+2;
+if(S.done[a]&&S.done[b]){var W=["BLOCO CONCLUÍDO! 🔥 Você arrasou! Os dias "+n1+" e "+n2+" abrem amanhã. Recarregue as energias!","Mais um bloco na conta! 💪 Amanhã tem os dias "+n1+" e "+n2+". Vem com tudo!","Que energia! ⚡ Você cumpriu o combinado hoje. Os dias "+n1+" e "+n2+" abrem amanhã. Prepare-se!","Você é imparável! 🚀 Os dias "+n1+" e "+n2+" te esperam amanhã. Bora!"];return W[i]}
+var P=["Bora! 🔥 Conclua os dias "+a+" e "+b+" e abra o próximo bloco!","Vamos nessa! 💪 Faltam os dias "+a+" e "+b+" para liberar o próximo bloco. Você consegue!","Foco total! ⚡ Termine os dias "+a+" e "+b+" e desbloqueie o próximo bloco!","Hoje é dia de arrasar! 🚀 Complete os dias "+a+" e "+b+" e libere o próximo bloco!"];return P[i]}
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
+app.innerHTML='<section class="load"><div class="sunspin"></div><h1 class="long">Carregando…</h1></section>';
+(async function(){if(!sb){render();return}try{var r=await sb.auth.getSession();if(r.data&&r.data.session)await enter(r.data.session);else render()}catch(e){render()}
+sb.auth.onAuthStateChange(function(ev){if(ev==="SIGNED_OUT"&&S.uid){S.uid="";S.email="";render()}})})();
+</script>
+</body>
+</html>
